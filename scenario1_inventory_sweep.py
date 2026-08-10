@@ -4,9 +4,10 @@ Lists every BigQuery table under thelook_ecommerce that carries the pii
 aspect. The aspect filter is what makes this a catalog search rather than a
 dressed-up `bq ls`.
 
-A predicate-only query consists solely of predicates (system=, parent:,
-aspect:, and so on) with no free text. Predicate-only queries are unbounded;
-natural-language queries return at most ~100 results.
+A predicate-only query is built from predicates alone (system=, parent:,
+aspect:, and so on) without any free text. These queries have no result cap,
+so you can enumerate every match; natural-language queries top out around
+100 results.
 """
 
 import json

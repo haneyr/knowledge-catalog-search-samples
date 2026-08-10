@@ -7,7 +7,7 @@ Each script in this directory is self-contained: it includes its own imports and
 ## Use cases
 
 - **Find data assets by meaning, not just name:** search the catalog with natural language queries.
-- **Enumerate assets with predicate queries:** run unbounded, SQL-like sweeps over the catalog, such as listing every table in a dataset that carries a given aspect.
+- **Enumerate assets with predicate queries:** run uncapped, SQL-like sweeps over the catalog, such as listing every table in a dataset that carries a given aspect.
 - **Audit metadata at the column level:** find every column tagged as containing personally identifiable information (PII) and check its masking status.
 - **Ground an AI agent in your data estate:** answer natural language questions about your data with responses that cite real tables and columns.
 
@@ -15,7 +15,7 @@ Each script in this directory is self-contained: it includes its own imports and
 
 The scripts demonstrate three Knowledge Catalog API methods and the patterns for chaining them:
 
-1. `searchEntries` finds catalog entries that match a query. Natural language queries return up to about 100 results; queries built only from predicates (such as `system=`, `parent:`, and `aspect:`) are unbounded and can be paged through completely.
+1. `searchEntries` finds catalog entries that match a query. Natural language queries return up to about 100 results; queries built from predicates alone (such as `system=`, `parent:`, and `aspect:`) have no result cap and can be paged through completely.
 2. `lookupEntry` retrieves a single entry with its full aspect payloads. Search results don't include column-level aspects, so workflows that filter on aspect field values chain search with lookup and filter client side.
 3. `lookupContext` returns a pre-formatted, LLM-ready bundle of metadata for up to 10 entries at a time, including schemas and possible join paths. This is the method to use when passing catalog context to a model or an agent.
 
@@ -70,12 +70,12 @@ The aspect type has two fields: `pii_type`, an enum classifying the kind of PII,
 
 ## Scenario 0: Search the catalog
 
-`scenario0_search_semantic.py` is the minimal complete example: one `search_entries` call with a natural language query, scoped to your project. `scenario0_search_keyword.py` is the same call with a keyword query. Both set `semantic_search=True`: the flag selects the current search stack for both query styles, and `semantic_search=False` exists for backward compatibility only.
+`scenario0_search_semantic.py` is the minimal complete example: one `search_entries` call with a natural language query, scoped to your project. `scenario0_search_keyword.py` is the same call with a keyword query. Both set `semantic_search=True`: the flag picks the search stack rather than the query style, and setting it to `False` routes queries to the legacy stack, kept around for older integrations.
 
 Two variations round out the basics:
 
 - `scenario0_scope_org.py` searches organization-wide instead of within one project. Use project scope when you know where the data lives.
-- `scenario0_pagination.py` pages through results. Pagination past the first ~100 results works only for predicate-only queries.
+- `scenario0_pagination.py` pages through results. Only predicate-only queries page past the first ~100 results.
 
 **Note:** search results return entry names containing the project number rather than the project ID. The lookup methods accept these names as they are.
 

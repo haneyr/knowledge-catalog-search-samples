@@ -24,7 +24,7 @@ def search_catalog(question: str) -> list[str]:
             name=f"projects/{PROJECT_ID}/locations/global",
             scope=f"projects/{PROJECT_ID}",
             query=question,
-            # semantic_search=False is for backward compatibility only.
+            # Keep semantic_search=True; False routes to the legacy stack.
             semantic_search=True,
             page_size=5,
         )

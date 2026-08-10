@@ -1,8 +1,9 @@
 """Scenario 0 cookbook: pagination.
 
-Pagination past the first ~100 results only works for predicate-only queries
-(only predicates such as system=, parent:, aspect:, and no free text).
-Natural-language and free-text queries return at most ~100 results total.
+Only predicate-only queries page past the first ~100 results. A query
+qualifies when it is built from predicates alone (system=, parent:, aspect:)
+without any free text; natural-language and free-text queries top out around
+100 results total.
 """
 
 from google.cloud import dataplex_v1
@@ -11,7 +12,7 @@ with dataplex_v1.CatalogServiceClient() as client:
     request = dataplex_v1.SearchEntriesRequest(
         name="projects/example-project/locations/global",
         scope="projects/example-project",
-        # Predicate-only: no free text, so results are unbounded and pageable.
+        # Predicates only, no free text: no result cap, fully pageable.
         query="system=bigquery",
         semantic_search=True,
         page_size=50,  # max 1000

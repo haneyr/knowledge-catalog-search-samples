@@ -9,11 +9,12 @@ with dataplex_v1.CatalogServiceClient() as client:
         # Limit the search to this project. Omit scope to search the whole
         # organization; see the org-scope example.
         scope="projects/example-project",
-        # A natural-language query. At most ~100 results are returned for these;
-        # see the predicate-only examples for unbounded enumeration.
+        # A natural-language query. Expect at most ~100 results from these;
+        # to enumerate everything that matches, use a predicate-only query.
         query="which tables contain customer personal information",
-        # semantic_search selects the current search stack for BOTH natural-language
-        # and keyword queries. semantic_search=False is for backward compatibility only.
+        # semantic_search picks the search stack, not the query style. Keep it
+        # True for natural-language and keyword queries alike; False routes to
+        # the legacy stack and exists only for older integrations.
         semantic_search=True,
         page_size=5,
     )
