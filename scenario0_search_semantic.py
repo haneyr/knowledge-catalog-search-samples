@@ -6,7 +6,8 @@ with dataplex_v1.CatalogServiceClient() as client:
     request = dataplex_v1.SearchEntriesRequest(
         # Required. The project the request is attributed to; search itself is global.
         name="projects/example-project/locations/global",
-        # Limiting scope to a project is faster than the default (organization-wide).
+        # Limit the search to this project. Omit scope to search the whole
+        # organization; see the org-scope example.
         scope="projects/example-project",
         # A natural-language query. At most ~100 results are returned for these;
         # see the predicate-only examples for unbounded enumeration.

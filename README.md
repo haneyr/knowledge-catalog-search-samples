@@ -74,7 +74,7 @@ The aspect type has two fields: `pii_type`, an enum classifying the kind of PII,
 
 Two variations round out the basics:
 
-- `scenario0_scope_org.py` searches organization-wide instead of within one project. Project scope is faster; use it when you know where the data lives.
+- `scenario0_scope_org.py` searches organization-wide instead of within one project. Use project scope when you know where the data lives.
 - `scenario0_pagination.py` pages through results. Pagination past the first ~100 results works only for predicate-only queries.
 
 **Note:** search results return entry names containing the project number rather than the project ID. The lookup methods accept these names as they are.

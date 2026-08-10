@@ -1,8 +1,7 @@
 """Scenario 0 cookbook: organization-wide (open-ended) search.
 
 Omitting scope, or setting it to an organization, searches everything the
-caller can see. Project scope is faster; use it when you know where the data
-lives. Note: order_by is not supported on the current search stack.
+caller can see. Note: order_by is not supported on the current search stack.
 """
 
 from google.cloud import dataplex_v1
