@@ -2,8 +2,8 @@
 
 The query style changes; the flag does not. Keep semantic_search=True for
 natural-language and keyword queries alike; it selects the current search
-stack. Setting it to False routes the query to the legacy stack and exists
-only to keep older integrations working.
+stack. False routes the query to the legacy stack and exists only to keep
+older integrations working.
 """
 
 from google.cloud import dataplex_v1

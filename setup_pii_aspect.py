@@ -1,7 +1,7 @@
 """Setup: create the `pii` aspect type and attach it to columns of thelook_ecommerce.users.
 
 Run once after copying the thelook_ecommerce tables into your project (see the
-bq commands in the tutorial). Requires roles/dataplex.catalogEditor.
+bq commands in the README). Requires roles/dataplex.catalogEditor.
 """
 
 from google.api_core import exceptions

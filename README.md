@@ -1,51 +1,37 @@
 # Search Knowledge Catalog programmatically
 
-This tutorial shows you how to search Knowledge Catalog (formerly Dataplex Universal Catalog) with the Python client library, and how to chain search with entry lookup and context retrieval to build data discovery workflows, including an AI agent grounded in your catalog.
+A catalog earns its keep when you can query it from code. The scripts in this directory search Knowledge Catalog (formerly Dataplex Universal Catalog) with the Python client library and chain the calls that most metadata workflows reduce to: find entries, fetch their payloads, and hand the result to whatever acts on it — an audit loop, a pipeline, or an agent answering questions in plain language.
 
-Each script in this directory is self-contained: it includes its own imports and client initialization, uses inline resource names, and can be run on its own or pasted into a notebook cell. The scripts build on each other in order, and all of them run against the same sample dataset so results are reproducible.
-
-## Use cases
-
-- **Find data assets by meaning, not just name:** search the catalog with natural language queries.
-- **Enumerate assets with predicate queries:** run uncapped, SQL-like sweeps over the catalog, such as listing every table in a dataset that carries a given aspect.
-- **Audit metadata at the column level:** find every column tagged as containing personally identifiable information (PII) and check its masking status.
-- **Ground an AI agent in your data estate:** answer natural language questions about your data with responses that cite real tables and columns.
+Each script is self-contained. Imports and client setup repeat in every file, so you can run one on its own or paste it into a notebook cell without hunting for context defined somewhere above. Every script runs against the same sample dataset, and each ends with a comment block showing the output you should see.
 
 ## How it works
 
-The scripts demonstrate three Knowledge Catalog API methods and the patterns for chaining them:
+Three API methods do the work:
 
 1. `searchEntries` finds catalog entries that match a query. Natural language queries return up to about 100 results; queries built from predicates alone (such as `system=`, `parent:`, and `aspect:`) have no result cap and can be paged through completely.
-2. `lookupEntry` retrieves a single entry with its full aspect payloads. Search results don't include column-level aspects, so workflows that filter on aspect field values chain search with lookup and filter client side.
-3. `lookupContext` returns a pre-formatted, LLM-ready bundle of metadata for up to 10 entries at a time, including schemas and possible join paths. This is the method to use when passing catalog context to a model or an agent.
+2. `lookupEntry` retrieves a single entry with its full aspect payloads. Search results don't include column-level aspects, so any workflow that filters on aspect field values chains search with lookup and filters client side.
+3. `lookupContext` returns a pre-formatted, LLM-ready bundle of metadata for up to 10 entries at a time, including schemas and possible join paths. When you pass catalog context to a model, this is the method.
 
 ## Before you begin
 
-### Required roles
-
-To run these scripts, ask your administrator to grant you the following IAM roles on your project:
+You need four IAM roles on the project:
 
 - Dataplex Catalog Editor (`roles/dataplex.catalogEditor`) — create the aspect type and attach aspects
 - Dataplex Catalog Viewer (`roles/dataplex.catalogViewer`) — search, look up entries, and retrieve context
 - BigQuery Data Editor (`roles/bigquery.dataEditor`) and BigQuery Job User (`roles/bigquery.jobUser`) — create the sample dataset
 - Vertex AI User (`roles/aiplatform.user`) — run the agent example
 
-### Enable the APIs
+Enable the APIs, set up Application Default Credentials, and install the client libraries:
 
 ```bash
 gcloud services enable bigquery.googleapis.com dataplex.googleapis.com aiplatform.googleapis.com
-```
-
-### Set up authentication and dependencies
-
-```bash
 gcloud auth application-default login
 pip install -r requirements.txt
 ```
 
 ## Set up the sample dataset
 
-The examples run against a copy of the theLook eCommerce public dataset. Copy four tables into your own project so that Knowledge Catalog indexes them and you can attach metadata to them. The source dataset lives in the US multi-region, so the target dataset must too.
+The examples run against a copy of the theLook eCommerce public dataset. You copy four tables into your own project because Knowledge Catalog indexes what your project owns, and because you can't attach aspects to `bigquery-public-data`. The source lives in the US multi-region, so the target dataset must too.
 
 ```bash
 bq mk --dataset --location=US PROJECT_ID:thelook_ecommerce
@@ -56,7 +42,7 @@ bq cp bigquery-public-data:thelook_ecommerce.order_items  PROJECT_ID:thelook_eco
 bq cp bigquery-public-data:thelook_ecommerce.products     PROJECT_ID:thelook_ecommerce.products
 ```
 
-Replace `PROJECT_ID` in the commands above with your project ID. The scripts use `example-project` as their placeholder; replace it with your project ID before running them.
+Replace `PROJECT_ID` in the commands above with your project ID. The scripts use `example-project` as their placeholder; replace it the same way before running them.
 
 Then create the `pii` aspect type and attach it to the columns of the `users` table:
 
@@ -64,20 +50,17 @@ Then create the `pii` aspect type and attach it to the columns of the `users` ta
 python3 setup_pii_aspect.py
 ```
 
-The aspect type has two fields: `pii_type`, an enum classifying the kind of PII, and `masked`, a boolean recording whether the column is masked downstream. The setup script attaches it to seven columns of `users` with a mix of masked and unmasked values, which gives the audit example in scenario 2 a meaningful result. The script is safe to re-run.
+The aspect type has two fields: `pii_type`, an enum classifying the kind of PII, and `masked`, a boolean recording whether the column is masked downstream. The setup script tags seven columns of `users`, four of them unmasked, which is what gives the audit in scenario 2 an answer worth printing. The script is safe to re-run.
 
-**Note:** BigQuery metadata is ingested into Knowledge Catalog automatically, but indexing is not instant. Freshly copied tables take a few minutes to appear in semantic search results, and newly attached aspects take a few minutes to match `aspect:` predicates. If a search returns nothing right after setup, wait and retry.
+Indexing is not instant. Freshly copied tables take a few minutes to appear in semantic search results, and newly attached aspects take a few minutes to match `aspect:` predicates. A search that returns nothing right after setup usually means wait and retry, not broken.
 
 ## Scenario 0: Search the catalog
 
-`scenario0_search_semantic.py` is the minimal complete example: one `search_entries` call with a natural language query, scoped to your project. `scenario0_search_keyword.py` is the same call with a keyword query. Both set `semantic_search=True`: the flag picks the search stack rather than the query style, and setting it to `False` routes queries to the legacy stack, kept around for older integrations.
+`scenario0_search_semantic.py` is the minimal complete example: one `search_entries` call with a natural language query, scoped to your project. `scenario0_search_keyword.py` is the same call with a keyword query. Both set `semantic_search=True` because the flag picks the search stack rather than the query style; setting it to `False` routes queries to the legacy stack, kept around for older integrations.
 
-Two variations round out the basics:
+Two variations follow. `scenario0_scope_org.py` drops the project scope and searches everything in the organization you can read — use project scope when you know where the data lives. `scenario0_pagination.py` pages through results; only predicate-only queries page past the first ~100.
 
-- `scenario0_scope_org.py` searches organization-wide instead of within one project. Use project scope when you know where the data lives.
-- `scenario0_pagination.py` pages through results. Only predicate-only queries page past the first ~100 results.
-
-**Note:** search results return entry names containing the project number rather than the project ID. The lookup methods accept these names as they are.
+One behavior surprises people parsing results: entry names come back with the project number, not the project ID. The lookup methods accept these names as they are, so pass them through unchanged.
 
 ## Scenario 1: Enumerate assets with a predicate-only query
 
@@ -87,17 +70,17 @@ Two variations round out the basics:
 system=bigquery parent:thelook_ecommerce aspect:PROJECT_ID.global.pii
 ```
 
-The script prints the first result in full so you can see the exact structure of a `SearchEntriesResult`, then iterates the rest. Use the full `PROJECT_ID.LOCATION.ASPECT_TYPE_ID` path in `aspect:` predicates; short forms are not matched on the current search stack.
+The script prints the first result in full so you can see the exact structure of a `SearchEntriesResult`, then iterates the rest. Use the full `PROJECT_ID.LOCATION.ASPECT_TYPE_ID` path in `aspect:` predicates; short forms like `aspect:pii` are not matched on the current search stack, and the query returns nothing rather than failing.
 
 ## Scenario 2: Audit column-level metadata with search and lookup
 
-`scenario2_pii_audit.py` answers the question "which tables contain PII, in which columns, and which of those are unmasked?" It searches for entries carrying the `pii` aspect, calls `lookup_entry` on each result to retrieve the column-level aspect payloads that search results don't expose, and filters client side on the aspect's field values.
+`scenario2_pii_audit.py` answers a question your security team eventually asks: which tables contain PII, in which columns, and which of those are unmasked? It searches for entries carrying the `pii` aspect, calls `lookup_entry` on each result to retrieve the column-level payloads that search results don't expose, and filters client side. Against the sample data it reports four unmasked columns: `users.email`, `users.first_name`, `users.last_name`, and `users.street_address`.
 
-Field-value matching in `aspect:` predicates (for example, `aspect:PROJECT_ID.global.pii.pii_type=EMAIL`) is not supported on the current search stack and degrades to free-text matching. Filter on aspect field values in your own code after lookup, as this script does.
+Field-value matching in `aspect:` predicates (for example, `aspect:PROJECT_ID.global.pii.pii_type=EMAIL`) is not supported on the current search stack and degrades to free-text matching, which returns unrelated entries instead of an error. Filter on aspect field values in your own code after lookup, as this script does.
 
 ## Scenario 3: Ground an agent in your catalog
 
-`scenario3_agent/` defines a minimal [Agent Development Kit](https://google.github.io/adk-docs/) agent with two tools: `search_catalog`, which runs a semantic search and returns the top entry names, and `get_context`, which retrieves LLM-ready metadata for those entries with `lookup_context`. The agent turns a question like "Which tables and columns do I need to compute revenue by product category?" into a search, grounds itself in the retrieved context, and answers citing real table and column names.
+`scenario3_agent/` defines a minimal [Agent Development Kit](https://google.github.io/adk-docs/) agent with two tools: `search_catalog`, which runs a semantic search and returns the top entry names, and `get_context`, which retrieves LLM-ready metadata for those entries with `lookup_context`. Ask it "Which tables and columns do I need to compute revenue by product category?" and it searches, reads the retrieved context, and answers with real names like `products.category` — or tells you what metadata is missing when the context can't support an answer.
 
 Run it from this directory:
 
@@ -110,7 +93,7 @@ adk run scenario3_agent
 
 ## Clean up
 
-To avoid incurring charges, delete the resources you created:
+Delete the resources you created:
 
 ```bash
 bq rm -r -f PROJECT_ID:thelook_ecommerce
