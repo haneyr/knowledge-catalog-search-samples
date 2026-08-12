@@ -58,5 +58,5 @@ with dataplex_v1.CatalogServiceClient() as client:
 #   }
 # }
 #
-# Note: search results do NOT include the column-level aspect payloads.
+# Note: search results carry no aspect payloads at all.
 # Scenario 2 shows how to retrieve them with lookup_entry.
