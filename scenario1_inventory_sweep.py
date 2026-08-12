@@ -58,5 +58,6 @@ with dataplex_v1.CatalogServiceClient() as client:
 #   }
 # }
 #
-# Note: search results carry no aspect payloads at all.
-# Scenario 2 shows how to retrieve them with lookup_entry.
+# Note: the aspects map on search results comes back empty, and the request
+# has no view parameter to ask for payloads. Scenario 2 retrieves them with
+# lookup_entry.

@@ -9,7 +9,7 @@ Each script is self-contained. Imports and client setup repeat in every file, so
 Three API methods do the work:
 
 1. `searchEntries` finds catalog entries that match a query. Natural language queries return up to about 100 results; queries built from predicates alone (such as `system=`, `parent:`, and `aspect:`) have no result cap and can be paged through completely.
-2. `lookupEntry` retrieves everything the catalog holds on a single entry: every aspect attached to it, entry-level or column-level. The entries that `searchEntries` returns carry no aspects at all, so any workflow that filters on aspect field values chains search with lookup and filters client side.
+2. `lookupEntry` retrieves everything the catalog holds on a single entry: every aspect attached to it, entry-level or column-level. `searchEntries` returns the same `Entry` shape, and its schema includes the aspects map, but the request offers no view parameter to ask for payloads and the map comes back empty. A workflow that filters on aspect field values therefore chains search with lookup and filters client side.
 3. `lookupContext` serves the model rather than the caller. One call covers up to 10 entries and returns a pre-formatted package of the metadata most relevant to working with them and the resources they connect to, including schemas and possible join paths, in YAML, JSON, or XML trimmed to a character budget you set. Ground an agent with this; reach for `lookupEntry` when you need every field on one specific entry.
 
 ## Before you begin
@@ -76,7 +76,7 @@ The script prints the first result in full so you can see the exact structure of
 
 ## Scenario 2: Audit column-level metadata with search and lookup
 
-`scenario2_pii_audit.py` answers a question your security team eventually asks: which tables contain PII, in which columns, and which of those are unmasked? It searches for entries carrying the `pii` aspect, calls `lookup_entry` on each result to retrieve the aspect payloads that search results don't carry, and filters client side. Against the sample data it reports four unmasked columns: `users.email`, `users.first_name`, `users.last_name`, and `users.street_address`.
+`scenario2_pii_audit.py` answers a question your security team eventually asks: which tables contain PII, in which columns, and which of those are unmasked? It searches for entries carrying the `pii` aspect, calls `lookup_entry` on each result to retrieve the aspect payloads that search results leave empty, and filters client side. Against the sample data it reports four unmasked columns: `users.email`, `users.first_name`, `users.last_name`, and `users.street_address`.
 
 Field-value matching in `aspect:` predicates (for example, `aspect:PROJECT_ID.global.pii.pii_type=EMAIL`) is not supported on the current search stack and degrades to free-text matching, which returns unrelated entries instead of an error. Filter on aspect field values in your own code after lookup, as this script does.
 

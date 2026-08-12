@@ -2,7 +2,7 @@
 
 PII audit: find every table that has PII, say which columns, and flag which
 are unmasked. Search finds the entries; lookup_entry retrieves the aspect
-payloads, which search results don't carry.
+payloads, which search results leave empty.
 """
 
 from google.cloud import dataplex_v1
