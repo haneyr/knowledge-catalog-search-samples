@@ -88,7 +88,8 @@ with dataplex_v1.CatalogServiceClient() as client:
 #       "resource": "//bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/users",
 #       "system": "BIGQUERY",
 #       "display_name": "users"
-#     }
+#     },
+#     "aspects": {}
 #   }
 # }
 #
