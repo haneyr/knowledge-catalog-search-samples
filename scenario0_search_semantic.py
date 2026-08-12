@@ -16,7 +16,6 @@ with dataplex_v1.CatalogServiceClient() as client:
         # True for natural-language and keyword queries alike; False routes to
         # the legacy stack and exists only for older integrations.
         semantic_search=True,
-        page_size=5,
     )
     for result in client.search_entries(request=request):
         entry = result.dataplex_entry

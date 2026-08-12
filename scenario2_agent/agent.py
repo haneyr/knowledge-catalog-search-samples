@@ -1,10 +1,10 @@
-"""Scenario 3: search, lookup_context, forward to an agent.
+"""Scenario 2: search, lookup_context, forward to an agent.
 
 A minimal ADK agent grounded in Knowledge Catalog. The agent turns a
 natural-language question into a catalog search, retrieves LLM-ready context
 for the top results, and answers citing actual tables and columns.
 
-Run with `adk run scenario3_agent` or `adk web` from the parent directory.
+Run with `adk run scenario2_agent` or `adk web` from the parent directory.
 """
 
 from google.adk.agents import Agent

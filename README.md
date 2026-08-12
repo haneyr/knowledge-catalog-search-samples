@@ -50,7 +50,7 @@ Then create the `pii` aspect type and attach it to the columns of the `users` ta
 python3 setup_pii_aspect.py
 ```
 
-The aspect type has two fields: `pii_type`, an enum classifying the kind of PII, and `masked`, a boolean recording whether the column is masked downstream. The setup script tags seven columns of `users`, four of them unmasked, so the audit in scenario 2 returns a subset instead of everything it scanned. The script is safe to re-run.
+The aspect type has two fields: `pii_type`, an enum classifying the kind of PII, and `masked`, a boolean recording whether the column is masked downstream. The setup script tags seven columns of `users`, four of them unmasked, so the audit in scenario 1 returns a subset instead of everything it scanned. The script is safe to re-run.
 
 Indexing is not instant. Freshly copied tables take a few minutes to appear in semantic search results, and newly attached aspects take a few minutes to match `aspect:` predicates. A search that returns nothing right after setup usually means wait and retry, not broken.
 
@@ -58,31 +58,27 @@ Indexing is not instant. Freshly copied tables take a few minutes to appear in s
 
 `scenario0_search_semantic.py` is the minimal complete example: one `search_entries` call with a natural language query, scoped to your project. `scenario0_search_keyword.py` is the same call with a keyword query. Set `semantic_search=True` on every search, natural language or keyword alike; the flag selects which search stack runs the query. `False` routes queries to the legacy stack and exists for older integrations.
 
-Two variations follow. `scenario0_scope_org.py` drops the project scope and searches everything in the organization you can read — use project scope when you know where the data lives. `scenario0_pagination.py` pages through results; only predicate-only queries page past the first ~100.
+Two variations follow. `scenario0_scope_org.py` drops the project scope and searches everything in the organization you can read — use project scope when you know where the data lives. `scenario0_pagination.py` pages through results; predicate-only queries can return results beyond the ~100 limit.
 
 Each scenario 0 script ends with its CLI counterpart. The command is `gcloud dataplex entries search`, the `--semantic-search` flag maps to `semantic_search=True`, and `--scope` takes the same values as the API field.
 
 One behavior surprises people parsing results: entry names come back with the project number, not the project ID. The lookup methods accept these names as they are, so pass them through unchanged.
 
-## Scenario 1: Enumerate assets with a predicate-only query
+## Scenario 1: Enumerate and audit assets with search and lookup
 
-`scenario1_inventory_sweep.py` lists every BigQuery table under `thelook_ecommerce` that carries the `pii` aspect, using only predicates:
+`scenario1_pii_audit.py` answers a question your security team eventually asks: which tables contain PII, in which columns, and which of those are unmasked? It starts with a predicate-only search for every BigQuery table under `thelook_ecommerce` that carries the `pii` aspect:
 
 ```
 system=bigquery parent:thelook_ecommerce aspect:PROJECT_ID.global.pii
 ```
 
-The script prints the first result in full so you can see the exact structure of a `SearchEntriesResult`, then iterates the rest. Use the full `PROJECT_ID.LOCATION.ASPECT_TYPE_ID` path in `aspect:` predicates; short forms like `aspect:pii` are not matched on the current search stack, and the query returns nothing rather than failing.
+The aspect filter is what makes this a catalog search rather than a BigQuery listing. The script prints the first result in full so you can see the exact structure of a `SearchEntriesResult`, calls `lookup_entry` on each result to retrieve the aspect payloads that search results leave empty, and filters client side. Against the sample data it reports four unmasked columns: `users.email`, `users.first_name`, `users.last_name`, and `users.street_address`.
 
-## Scenario 2: Audit column-level metadata with search and lookup
+Two predicate rules matter here. Use the full `PROJECT_ID.LOCATION.ASPECT_TYPE_ID` path in `aspect:` predicates; short forms like `aspect:pii` are not matched on the current search stack, and the query returns nothing rather than failing. And field-value matching (for example, `aspect:PROJECT_ID.global.pii.pii_type=EMAIL`) is not supported on the current search stack — it degrades to free-text matching, which returns unrelated entries instead of an error. Filter on aspect field values in your own code after lookup, as this script does.
 
-`scenario2_pii_audit.py` answers a question your security team eventually asks: which tables contain PII, in which columns, and which of those are unmasked? It searches for entries carrying the `pii` aspect, calls `lookup_entry` on each result to retrieve the aspect payloads that search results leave empty, and filters client side. Against the sample data it reports four unmasked columns: `users.email`, `users.first_name`, `users.last_name`, and `users.street_address`.
+## Scenario 2: Ground an agent in your catalog
 
-Field-value matching in `aspect:` predicates (for example, `aspect:PROJECT_ID.global.pii.pii_type=EMAIL`) is not supported on the current search stack and degrades to free-text matching, which returns unrelated entries instead of an error. Filter on aspect field values in your own code after lookup, as this script does.
-
-## Scenario 3: Ground an agent in your catalog
-
-`scenario3_agent/` defines a minimal [Agent Development Kit](https://google.github.io/adk-docs/) agent with two tools: `search_catalog`, which runs a semantic search and returns the top entry names, and `get_context`, which retrieves LLM-ready metadata for those entries with `lookup_context`. Ask it "Which tables and columns do I need to compute revenue by product category?" and it searches, reads the retrieved context, and answers with real names like `products.category` — or tells you what metadata is missing when the context can't support an answer.
+`scenario2_agent/` defines a minimal [Agent Development Kit](https://google.github.io/adk-docs/) agent with two tools: `search_catalog`, which runs a semantic search and returns the top entry names, and `get_context`, which retrieves LLM-ready metadata for those entries with `lookup_context`. Ask it "Which tables and columns do I need to compute revenue by product category?" and it searches, reads the retrieved context, and answers with real names like `products.category` — or tells you what metadata is missing when the context can't support an answer.
 
 Run it from this directory:
 
@@ -90,7 +86,7 @@ Run it from this directory:
 export GOOGLE_GENAI_USE_VERTEXAI=1
 export GOOGLE_CLOUD_PROJECT=PROJECT_ID
 export GOOGLE_CLOUD_LOCATION=us-central1
-adk run scenario3_agent
+adk run scenario2_agent
 ```
 
 ## Clean up

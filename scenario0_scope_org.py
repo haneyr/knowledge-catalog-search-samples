@@ -10,12 +10,12 @@ with dataplex_v1.CatalogServiceClient() as client:
     request = dataplex_v1.SearchEntriesRequest(
         name="projects/example-project/locations/global",
         # Search across the whole organization instead of one project.
+        # Replace ORG_ID with your organization's ID (gcloud organizations list).
         # If scope is omitted, it defaults to the organization that contains
         # the project named above.
-        scope="organizations/123456789012",
+        scope="organizations/ORG_ID",
         query="thelook",
         semantic_search=True,
-        page_size=10,
     )
     for result in client.search_entries(request=request):
         print(result.dataplex_entry.name)
@@ -25,4 +25,4 @@ with dataplex_v1.CatalogServiceClient() as client:
 #
 # CLI equivalent:
 #   gcloud dataplex entries search 'thelook' --project=example-project \
-#       --scope=organizations/123456789012 --semantic-search
+#       --scope=organizations/ORG_ID --semantic-search
