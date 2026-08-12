@@ -12,7 +12,7 @@ with dataplex_v1.CatalogServiceClient() as client:
         # A natural-language query. Expect at most ~100 results from these;
         # to enumerate everything that matches, use a predicate-only query.
         query="which tables contain customer personal information",
-        # semantic_search picks the search stack, not the query style. Keep it
+        # semantic_search selects which search stack runs the query. Keep it
         # True for natural-language and keyword queries alike; False routes to
         # the legacy stack and exists only for older integrations.
         semantic_search=True,

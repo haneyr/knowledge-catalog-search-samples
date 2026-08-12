@@ -56,7 +56,7 @@ Indexing is not instant. Freshly copied tables take a few minutes to appear in s
 
 ## Scenario 0: Search the catalog
 
-`scenario0_search_semantic.py` is the minimal complete example: one `search_entries` call with a natural language query, scoped to your project. `scenario0_search_keyword.py` is the same call with a keyword query. Set `semantic_search=True` on every search, natural language or keyword alike — the flag picks the search stack, not the query style. `False` routes queries to the legacy stack and exists for older integrations.
+`scenario0_search_semantic.py` is the minimal complete example: one `search_entries` call with a natural language query, scoped to your project. `scenario0_search_keyword.py` is the same call with a keyword query. Set `semantic_search=True` on every search, natural language or keyword alike; the flag selects which search stack runs the query. `False` routes queries to the legacy stack and exists for older integrations.
 
 Two variations follow. `scenario0_scope_org.py` drops the project scope and searches everything in the organization you can read — use project scope when you know where the data lives. `scenario0_pagination.py` pages through results; only predicate-only queries page past the first ~100.
 
