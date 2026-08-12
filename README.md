@@ -9,7 +9,7 @@ Each script is self-contained. Imports and client setup repeat in every file, so
 Three API methods do the work:
 
 1. `searchEntries` finds catalog entries that match a query. Natural language queries return up to about 100 results; queries built from predicates alone (such as `system=`, `parent:`, and `aspect:`) have no result cap and can be paged through completely.
-2. `lookupEntry` retrieves everything the catalog holds on a single entry: every aspect attached to it, entry-level or column-level. Search results carry no aspects at all (in testing, the `users` search result arrived with zero while lookup on the same entry returned eleven), so any workflow that filters on aspect field values chains search with lookup and filters client side.
+2. `lookupEntry` retrieves everything the catalog holds on a single entry: every aspect attached to it, entry-level or column-level. The entries that `searchEntries` returns carry no aspects at all, so any workflow that filters on aspect field values chains search with lookup and filters client side.
 3. `lookupContext` serves the model rather than the caller. One call covers up to 10 entries and returns a pre-formatted package of the metadata most relevant to working with them and the resources they connect to, including schemas and possible join paths, in YAML, JSON, or XML trimmed to a character budget you set. Ground an agent with this; reach for `lookupEntry` when you need every field on one specific entry.
 
 ## Before you begin
