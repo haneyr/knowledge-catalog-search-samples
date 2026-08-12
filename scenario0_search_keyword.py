@@ -1,9 +1,8 @@
 """Scenario 0b: the same minimal search with a keyword query.
 
-The query style changes; the flag does not. Keep semantic_search=True for
-natural-language and keyword queries alike; it selects the current search
-stack. False routes the query to the legacy stack and exists only to keep
-older integrations working.
+Keep semantic_search=True for natural-language and keyword queries alike;
+it selects the current search stack. False routes the query to the legacy
+stack and exists only to keep older integrations working.
 """
 
 from google.cloud import dataplex_v1
