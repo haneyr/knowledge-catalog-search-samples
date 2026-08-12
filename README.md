@@ -60,6 +60,8 @@ Indexing is not instant. Freshly copied tables take a few minutes to appear in s
 
 Two variations follow. `scenario0_scope_org.py` drops the project scope and searches everything in the organization you can read — use project scope when you know where the data lives. `scenario0_pagination.py` pages through results; only predicate-only queries page past the first ~100.
 
+Each scenario 0 script ends with its CLI counterpart. The command is `gcloud dataplex entries search`, the `--semantic-search` flag maps to `semantic_search=True`, and `--scope` takes the same values as the API field.
+
 One behavior surprises people parsing results: entry names come back with the project number, not the project ID. The lookup methods accept these names as they are, so pass them through unchanged.
 
 ## Scenario 1: Enumerate assets with a predicate-only query

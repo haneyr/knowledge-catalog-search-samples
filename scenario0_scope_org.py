@@ -22,3 +22,7 @@ with dataplex_v1.CatalogServiceClient() as client:
 
 # Expected output: entries from every project in the organization that the
 # caller can read, including copies of thelook_ecommerce in other projects.
+#
+# CLI equivalent:
+#   gcloud dataplex entries search 'thelook' --project=example-project \
+#       --scope=organizations/123456789012 --semantic-search

@@ -25,3 +25,7 @@ with dataplex_v1.CatalogServiceClient() as client:
 # Expected output:
 #
 # users: projects/example-project/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/users
+#
+# CLI equivalent:
+#   gcloud dataplex entries search 'users system=bigquery' \
+#       --project=example-project --scope=projects/example-project --semantic-search

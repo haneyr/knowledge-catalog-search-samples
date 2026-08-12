@@ -47,3 +47,8 @@ with dataplex_v1.CatalogServiceClient() as client:
 #     }
 #   }
 # }
+#
+# CLI equivalent:
+#   gcloud dataplex entries search 'which tables contain customer personal information' \
+#       --project=example-project --scope=projects/example-project \
+#       --semantic-search --limit=5
