@@ -1,6 +1,6 @@
 # Search Knowledge Catalog programmatically
 
-A catalog earns its keep when you can query it from code. The scripts in this directory search Knowledge Catalog (formerly Dataplex Universal Catalog) with the Python client library and chain the calls that most metadata workflows reduce to: find entries, fetch their payloads, and hand the result to whatever acts on it — an audit loop, a pipeline, or an agent answering questions in plain language.
+Most of what you do with a catalog starts with a query from code. The scripts in this directory search Knowledge Catalog (formerly Dataplex Universal Catalog) with the Python client library and chain the calls that most metadata workflows reduce to: find entries, fetch their payloads, and hand the result to whatever acts on it — an audit loop, a pipeline, or an agent answering questions in plain language.
 
 Each script is self-contained. Imports and client setup repeat in every file, so you can run one on its own or paste it into a notebook cell without hunting for context defined somewhere above. Every script runs against the same sample dataset, and each ends with a comment block showing the output you should see.
 
@@ -50,7 +50,7 @@ Then create the `pii` aspect type and attach it to the columns of the `users` ta
 python3 setup_pii_aspect.py
 ```
 
-The aspect type has two fields: `pii_type`, an enum classifying the kind of PII, and `masked`, a boolean recording whether the column is masked downstream. The setup script tags seven columns of `users`, four of them unmasked, which is what gives the audit in scenario 2 an answer worth printing. The script is safe to re-run.
+The aspect type has two fields: `pii_type`, an enum classifying the kind of PII, and `masked`, a boolean recording whether the column is masked downstream. The setup script tags seven columns of `users`, four of them unmasked, so the audit in scenario 2 returns a subset instead of everything it scanned. The script is safe to re-run.
 
 Indexing is not instant. Freshly copied tables take a few minutes to appear in semantic search results, and newly attached aspects take a few minutes to match `aspect:` predicates. A search that returns nothing right after setup usually means wait and retry, not broken.
 
