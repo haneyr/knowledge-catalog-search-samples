@@ -1,16 +1,16 @@
 # Search Knowledge Catalog programmatically
 
-Most of what you do with a catalog starts with a query from code. The scripts in this directory search Knowledge Catalog (formerly Dataplex Universal Catalog) with the Python client library and chain the calls that most metadata workflows reduce to: find entries, fetch their payloads, and hand the result to whatever acts on it — an audit loop, a pipeline, or an agent answering questions in plain language.
+Most of what you do with a catalog starts with a query from code. The scripts in this directory search Knowledge Catalog (formerly Dataplex Universal Catalog) with the Python client library, then chain search with entry lookup and context retrieval — ending with an agent grounded in the catalog.
 
-Each script is self-contained. Imports and client setup repeat in every file, so you can run one on its own or paste it into a notebook cell without hunting for context defined somewhere above. Every script runs against the same sample dataset, and each ends with a comment block showing the output you should see.
+Each script is self-contained: imports, client setup, and inline values. Run one alone or paste it into a notebook cell. All scripts use the same sample dataset, and each ends with a comment block showing the output to expect.
 
 ## How it works
 
 Three API methods do the work:
 
 1. `searchEntries` finds catalog entries that match a query. Natural language queries return up to about 100 results; queries built from predicates alone (such as `system=`, `parent:`, and `aspect:`) have no result cap and can be paged through completely.
-2. `lookupEntry` retrieves a single entry and the aspects attached to it, entry-level or column-level; the view you request decides which aspects come back, and even the widest view caps at 100 per entry. Note that searching and retrieval are separate operations. An `aspect:` predicate matches entries by what's attached to them, but the matches come back without the aspect data itself — the `Entry` in a search result includes the aspects map in its schema, the request has no view parameter to ask for payloads, and the map arrives empty. So a search tells you `users` carries the `pii` aspect; which columns, and whether they're masked, requires a `lookupEntry` call. A workflow that filters on aspect field values therefore chains search with lookup and filters client side.
-3. `lookupContext` serves the model rather than the caller. One call covers up to 10 entries and returns a pre-formatted package of the metadata most relevant to working with them and the resources they connect to, including schemas and possible join paths, in YAML, JSON, or XML trimmed to a character budget you set with the `context_budget` option. Use it to ground an agent; use `lookupEntry` when you need one specific entry in full detail.
+2. `lookupEntry` retrieves a single entry with its aspects, entry-level and column-level; the `view` field on the request selects which aspects, and even the widest view returns at most 100. Search results never carry aspect data: the aspects map on a search result arrives empty, and `SearchEntriesRequest` has no view field to fill it. A search can tell you `users` carries the `pii` aspect; which columns, and whether they're masked, requires `lookupEntry`. Workflows that filter on aspect fields chain the two calls and filter client side.
+3. `lookupContext` returns prompt-ready metadata for up to 10 entries and the resources they connect to — schemas, join paths — as YAML, JSON, or XML sized by the `context_budget` option. Use it to ground an agent; use `lookupEntry` to read one entry in full.
 
 One regionality rule spans all three: search is a global service, so its requests name `locations/global`, while entries live in regional data planes — the lookup calls target the asset's storage region (`locations/us` for this tutorial's dataset).
 
@@ -54,7 +54,7 @@ python3 setup_pii_aspect.py
 
 The aspect type has two fields: `pii_type`, an enum classifying the kind of PII, and `masked`, a boolean recording whether the column is masked downstream. The setup script tags seven columns of `users`, four of them unmasked, so the audit in scenario 1 returns a subset instead of everything it scanned. The script is safe to re-run.
 
-Indexing is not instant. Freshly copied tables take a few minutes to appear in semantic search results, and newly attached aspects take a few minutes to match `aspect:` predicates. A search that returns nothing right after setup usually means wait and retry, not broken.
+Indexing is not instant. Freshly copied tables take a few minutes to appear in semantic search results, and newly attached aspects take a few minutes to match `aspect:` predicates. If a search returns nothing right after setup, wait a few minutes and retry.
 
 ## Scenario 0: Search the catalog
 
@@ -68,21 +68,21 @@ One behavior surprises people parsing results: entry names come back with the pr
 
 ## Scenario 1: Retrieve and audit assets with search and lookup
 
-`scenario1_pii_audit.py` answers a question your security team eventually asks: which tables contain PII, in which columns, and which of those are unmasked? It starts with a predicate-only search for every BigQuery table under `thelook_ecommerce` that carries the `pii` aspect:
+Which tables contain PII, in which columns, and which are unmasked? `scenario1_pii_audit.py` starts with a predicate-only search for every BigQuery table under `thelook_ecommerce` that carries the `pii` aspect — the filter a plain BigQuery listing can't do:
 
 ```
 system=bigquery parent:thelook_ecommerce aspect:PROJECT_ID.global.pii
 ```
 
-The aspect filter is what makes this a catalog search rather than a BigQuery listing. The script prints the first result in full so you can see the exact structure of a `SearchEntriesResult`, calls `lookup_entry` on each result to retrieve the aspect payloads that search results leave empty, and filters client side. Against the sample data it reports four unmasked columns: `users.email`, `users.first_name`, `users.last_name`, and `users.street_address`.
+The script prints the first result in full to show the `SearchEntriesResult` structure, then calls `lookup_entry` on each result for the aspect payloads and filters client side. Against the sample data it reports four unmasked columns: `users.email`, `users.first_name`, `users.last_name`, and `users.street_address`.
 
-Two predicate rules matter here. Use the full `PROJECT_ID.LOCATION.ASPECT_TYPE_ID` path in `aspect:` predicates; short forms like `aspect:pii` are not matched on the current search stack, and the query returns nothing rather than failing. And field-value matching (for example, `aspect:PROJECT_ID.global.pii.pii_type=EMAIL`) is not supported on the current search stack — it degrades to free-text matching, which returns unrelated entries instead of an error. Filter on aspect field values in your own code after lookup, as this script does.
+Two predicate rules apply. Use the full `PROJECT_ID.LOCATION.ASPECT_TYPE_ID` path (short forms like `aspect:pii` return nothing on the current search stack). And don't rely on field-value matching (`aspect:...pii_type=EMAIL`) — it degrades to free-text matching and returns unrelated entries. Filter on field values after lookup, as the script does.
 
 The lookups run sequentially, which is fine for a tutorial dataset. A production scan over hundreds of tables should issue them concurrently — `concurrent.futures.ThreadPoolExecutor` or `CatalogServiceAsyncClient`.
 
 ## Scenario 2: Ground an agent in your catalog
 
-`scenario2_agent/` defines a minimal [Agent Development Kit](https://google.github.io/adk-docs/) agent with two tools: `search_catalog`, which runs a semantic search and returns the top entry names, and `get_context`, which retrieves LLM-ready metadata for those entries with `lookup_context`. Ask it "Which tables and columns do I need to compute revenue by product category?" and it searches, reads the retrieved context, and answers with real names like `products.category` — or tells you what metadata is missing when the context can't support an answer.
+`scenario2_agent/` defines a minimal [Agent Development Kit](https://google.github.io/adk-docs/) agent with two tools: `search_catalog`, which runs a semantic search and returns the top entry names, and `get_context`, which retrieves LLM-ready metadata for those entries with `lookup_context`. Ask it "Which tables and columns do I need to compute revenue by product category?" and it answers with real names like `products.category`, or says what metadata is missing.
 
 Run it from this directory:
 
