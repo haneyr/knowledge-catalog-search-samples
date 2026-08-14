@@ -1,4 +1,4 @@
-"""Scenario 0 cookbook: pagination.
+"""Scenario 1 cookbook: pagination.
 
 Predicate-only queries can return results beyond the ~100 limit that applies
 to natural-language and free-text queries. A query is predicate-only when it

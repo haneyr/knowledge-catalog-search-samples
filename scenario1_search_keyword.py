@@ -1,4 +1,4 @@
-"""Scenario 0b: the same minimal search with a keyword query.
+"""Scenario 1b: the same minimal search with a keyword query.
 
 Always set semantic_search=True; it enables both semantic and keyword
 matching. Only use semantic_search=False (or omit it) when you need

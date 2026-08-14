@@ -1,4 +1,4 @@
-"""Scenario 0 cookbook: organization-wide (open-ended) search.
+"""Scenario 1 cookbook: organization-wide (open-ended) search.
 
 Omitting scope, or setting it to an organization, searches everything the
 caller can see. Note: order_by is not supported on the current search stack.

@@ -1,4 +1,4 @@
-"""Scenario 1: enumerate assets with a predicate-only search, then audit them.
+"""Scenario 2: enumerate assets with a predicate-only search, then audit them.
 
 PII audit: list every BigQuery table under thelook_ecommerce that carries the
 pii aspect, show the structure of a search result, then report which columns

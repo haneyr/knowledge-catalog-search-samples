@@ -52,23 +52,23 @@ Then create the `pii` aspect type and attach it to the columns of the `users` ta
 python3 setup_pii_aspect.py
 ```
 
-The aspect type has two fields: `pii_type`, an enum classifying the kind of PII, and `masked`, a boolean recording whether the column is masked downstream. The setup script tags seven columns of `users`, four of them unmasked, so the audit in scenario 1 returns a subset instead of everything it scanned. The script is safe to re-run.
+The aspect type has two fields: `pii_type`, an enum classifying the kind of PII, and `masked`, a boolean recording whether the column is masked downstream. The setup script tags seven columns of `users`, four of them unmasked, so the audit in scenario 2 returns a subset instead of everything it scanned. The script is safe to re-run.
 
 Indexing is not instant. Freshly copied tables take a few minutes to appear in semantic search results, and newly attached aspects take a few minutes to match `aspect:` predicates. If a search returns nothing right after setup, wait a few minutes and retry.
 
-## Scenario 0: Search the catalog
+## Scenario 1: Search the catalog
 
-`scenario0_search_semantic.py` is the minimal complete example: one `search_entries` call with a natural language query, scoped to your project. `scenario0_search_keyword.py` is the same call with a keyword query. Always set `semantic_search=True`; it enables both semantic and keyword matching. Only use `semantic_search=False` (or omit the flag) when you need keyword-only search for backward compatibility.
+`scenario1_search_semantic.py` is the minimal complete example: one `search_entries` call with a natural language query, scoped to your project. `scenario1_search_keyword.py` is the same call with a keyword query. Always set `semantic_search=True`; it enables both semantic and keyword matching. Only use `semantic_search=False` (or omit the flag) when you need keyword-only search for backward compatibility.
 
-Two variations follow. `scenario0_scope_org.py` drops the project scope and searches everything in the organization you can read — use project scope when you know where the data lives. `scenario0_pagination.py` pages through results; predicate-only queries can return results beyond the ~100 limit.
+Two variations follow. `scenario1_scope_org.py` drops the project scope and searches everything in the organization you can read — use project scope when you know where the data lives. `scenario1_pagination.py` pages through results; predicate-only queries can return results beyond the ~100 limit.
 
-Each scenario 0 script ends with its CLI counterpart. The command is `gcloud dataplex entries search`, the `--semantic-search` flag maps to `semantic_search=True`, and `--scope` takes the same values as the API field.
+Each scenario 1 script ends with its CLI counterpart. The command is `gcloud dataplex entries search`, the `--semantic-search` flag maps to `semantic_search=True`, and `--scope` takes the same values as the API field.
 
 One behavior surprises people parsing results: entry names come back with the project number, not the project ID. The lookup methods accept these names as they are, so pass them through unchanged.
 
-## Scenario 1: Retrieve and audit assets with search and lookup
+## Scenario 2: Retrieve and audit assets with search and lookup
 
-Which tables contain PII, in which columns, and which are unmasked? `scenario1_pii_audit.py` starts with a predicate-only search for every BigQuery table under `thelook_ecommerce` that carries the `pii` aspect:
+Which tables contain PII, in which columns, and which are unmasked? `scenario2_pii_audit.py` starts with a predicate-only search for every BigQuery table under `thelook_ecommerce` that carries the `pii` aspect:
 
 ```
 system=bigquery parent:thelook_ecommerce aspect:PROJECT_ID.global.pii
@@ -80,9 +80,9 @@ Two predicate rules apply. Use the full `PROJECT_ID.LOCATION.ASPECT_TYPE_ID` pat
 
 The lookups run sequentially, which is fine for a tutorial dataset. A production scan over hundreds of tables should issue them concurrently — `concurrent.futures.ThreadPoolExecutor` or `CatalogServiceAsyncClient`.
 
-## Scenario 2: Ground an agent in your catalog
+## Scenario 3: Ground an agent in your catalog
 
-`scenario2_agent/` defines a minimal [Agent Development Kit](https://google.github.io/adk-docs/) agent with two tools: `search_catalog`, which runs a semantic search and returns the top entry names, and `get_context`, which retrieves LLM-ready metadata for those entries with `lookup_context`. Ask it "Which tables and columns do I need to compute revenue by product category?" and it answers with real names like `products.category`, or says what metadata is missing.
+`scenario3_agent/` defines a minimal [Agent Development Kit](https://google.github.io/adk-docs/) agent with two tools: `search_catalog`, which runs a semantic search and returns the top entry names, and `get_context`, which retrieves LLM-ready metadata for those entries with `lookup_context`. Ask it "Which tables and columns do I need to compute revenue by product category?" and it answers with real names like `products.category`, or says what metadata is missing.
 
 Run it from this directory:
 
@@ -90,7 +90,7 @@ Run it from this directory:
 export GOOGLE_GENAI_USE_VERTEXAI=1
 export GOOGLE_CLOUD_PROJECT=PROJECT_ID
 export GOOGLE_CLOUD_LOCATION=us-central1
-adk run scenario2_agent
+adk run scenario3_agent
 ```
 
 `GOOGLE_CLOUD_LOCATION` here is the Vertex AI inference region and is unrelated to the Dataplex metadata region — the agent's `lookup_context` call still targets `locations/us`, where the tutorial dataset lives. Passing resources from different regions in one `lookup_context` call fails with a location mismatch error.

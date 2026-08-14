@@ -1,4 +1,4 @@
-"""Scenario 0a: minimal search with a natural-language query."""
+"""Scenario 1a: minimal search with a natural-language query."""
 
 from google.cloud import dataplex_v1
 
