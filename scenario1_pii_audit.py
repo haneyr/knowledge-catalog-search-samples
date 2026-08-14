@@ -82,7 +82,7 @@ with dataplex_v1.CatalogServiceClient() as client:
 #
 # {
 #   "dataplex_entry": {
-#     "name": "projects/example-project/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/users",
+#     "name": "projects/123456789012/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/users",
 #     "entry_type": "projects/dataplex-types/locations/global/entryTypes/bigquery-table",
 #     "entry_source": {
 #       "resource": "//bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/users",

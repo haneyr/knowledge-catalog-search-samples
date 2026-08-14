@@ -10,7 +10,9 @@ Three API methods do the work:
 
 1. `searchEntries` finds catalog entries that match a query. Natural language queries return up to about 100 results; queries built from predicates alone (such as `system=`, `parent:`, and `aspect:`) have no result cap and can be paged through completely.
 2. `lookupEntry` retrieves a single entry and the aspects attached to it, entry-level or column-level; the view you request decides which aspects come back, and even the widest view caps at 100 per entry. Note that searching and retrieval are separate operations. An `aspect:` predicate matches entries by what's attached to them, but the matches come back without the aspect data itself — the `Entry` in a search result includes the aspects map in its schema, the request has no view parameter to ask for payloads, and the map arrives empty. So a search tells you `users` carries the `pii` aspect; which columns, and whether they're masked, requires a `lookupEntry` call. A workflow that filters on aspect field values therefore chains search with lookup and filters client side.
-3. `lookupContext` serves the model rather than the caller. One call covers up to 10 entries and returns a pre-formatted package of the metadata most relevant to working with them and the resources they connect to, including schemas and possible join paths, in YAML, JSON, or XML trimmed to a character budget you set. Use it to ground an agent; use `lookupEntry` when you need one specific entry in full detail.
+3. `lookupContext` serves the model rather than the caller. One call covers up to 10 entries and returns a pre-formatted package of the metadata most relevant to working with them and the resources they connect to, including schemas and possible join paths, in YAML, JSON, or XML trimmed to a character budget you set with the `context_budget` option. Use it to ground an agent; use `lookupEntry` when you need one specific entry in full detail.
+
+One regionality rule spans all three: search is a global service, so its requests name `locations/global`, while entries live in regional data planes — the lookup calls target the asset's storage region (`locations/us` for this tutorial's dataset).
 
 ## Before you begin
 
@@ -76,6 +78,8 @@ The aspect filter is what makes this a catalog search rather than a BigQuery lis
 
 Two predicate rules matter here. Use the full `PROJECT_ID.LOCATION.ASPECT_TYPE_ID` path in `aspect:` predicates; short forms like `aspect:pii` are not matched on the current search stack, and the query returns nothing rather than failing. And field-value matching (for example, `aspect:PROJECT_ID.global.pii.pii_type=EMAIL`) is not supported on the current search stack — it degrades to free-text matching, which returns unrelated entries instead of an error. Filter on aspect field values in your own code after lookup, as this script does.
 
+The lookups run sequentially, which is fine for a tutorial dataset. A production scan over hundreds of tables should issue them concurrently — `concurrent.futures.ThreadPoolExecutor` or `CatalogServiceAsyncClient`.
+
 ## Scenario 2: Ground an agent in your catalog
 
 `scenario2_agent/` defines a minimal [Agent Development Kit](https://google.github.io/adk-docs/) agent with two tools: `search_catalog`, which runs a semantic search and returns the top entry names, and `get_context`, which retrieves LLM-ready metadata for those entries with `lookup_context`. Ask it "Which tables and columns do I need to compute revenue by product category?" and it searches, reads the retrieved context, and answers with real names like `products.category` — or tells you what metadata is missing when the context can't support an answer.
@@ -89,13 +93,15 @@ export GOOGLE_CLOUD_LOCATION=us-central1
 adk run scenario2_agent
 ```
 
+`GOOGLE_CLOUD_LOCATION` here is the Vertex AI inference region and is unrelated to the Dataplex metadata region — the agent's `lookup_context` call still targets `locations/us`, where the tutorial dataset lives. Passing resources from different regions in one `lookup_context` call fails with a location mismatch error.
+
 ## Clean up
 
 Delete the resources you created:
 
 ```bash
 bq rm -r -f PROJECT_ID:thelook_ecommerce
-gcloud dataplex aspect-types delete pii --location=global --project=PROJECT_ID
+gcloud dataplex aspect-types delete pii --location=global --project=PROJECT_ID --quiet
 ```
 
 ## What's next

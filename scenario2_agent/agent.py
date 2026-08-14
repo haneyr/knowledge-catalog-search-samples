@@ -12,6 +12,10 @@ from google.cloud import dataplex_v1
 
 PROJECT_ID = "example-project"
 
+# One client for both tools. Creating a client per call tears down the gRPC
+# channel and adds connection overhead to every agent turn.
+catalog_client = dataplex_v1.CatalogServiceClient()
+
 
 def search_catalog(question: str) -> list[str]:
     """Search Knowledge Catalog and return the names of the top 5 entries.
@@ -19,16 +23,15 @@ def search_catalog(question: str) -> list[str]:
     Args:
         question: A natural-language description of the data you need.
     """
-    with dataplex_v1.CatalogServiceClient() as client:
-        request = dataplex_v1.SearchEntriesRequest(
-            name=f"projects/{PROJECT_ID}/locations/global",
-            scope=f"projects/{PROJECT_ID}",
-            query=question,
-            # Keep semantic_search=True; False routes to the legacy stack.
-            semantic_search=True,
-            page_size=5,
-        )
-        return [r.dataplex_entry.name for r in client.search_entries(request=request)]
+    request = dataplex_v1.SearchEntriesRequest(
+        name=f"projects/{PROJECT_ID}/locations/global",
+        scope=f"projects/{PROJECT_ID}",
+        query=question,
+        # Keep semantic_search=True; False routes to the legacy stack.
+        semantic_search=True,
+        page_size=5,
+    )
+    return [r.dataplex_entry.name for r in catalog_client.search_entries(request=request)]
 
 
 def get_context(entry_names: list[str]) -> str:
@@ -37,17 +40,20 @@ def get_context(entry_names: list[str]) -> str:
     Args:
         entry_names: Entry resource names returned by search_catalog.
     """
-    with dataplex_v1.CatalogServiceClient() as client:
-        response = client.lookup_context(
-            request=dataplex_v1.LookupContextRequest(
-                name=f"projects/{PROJECT_ID}/locations/us",
-                # Passing several tables at once also returns possible join
-                # paths between them. Maximum of 10 resources per request.
-                resources=entry_names[:10],
-                options={"format": "yaml", "context_budget": "8000"},
-            )
+    # lookup_context rejects an empty resources list, so return early when
+    # the search found nothing instead of crashing the agent turn.
+    if not entry_names:
+        return "No matching catalog entries found."
+    response = catalog_client.lookup_context(
+        request=dataplex_v1.LookupContextRequest(
+            name=f"projects/{PROJECT_ID}/locations/us",
+            # Passing several tables at once also returns possible join
+            # paths between them. Maximum of 10 resources per request.
+            resources=entry_names[:10],
+            options={"format": "yaml", "context_budget": "8000"},
         )
-        return response.context
+    )
+    return response.context
 
 
 root_agent = Agent(

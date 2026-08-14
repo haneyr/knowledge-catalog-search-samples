@@ -26,8 +26,8 @@ with dataplex_v1.CatalogServiceClient() as client:
 # entry names come back with the project NUMBER, not the project ID, and
 # freshly copied tables take a few minutes to appear in semantic results.
 #
-# projects/example-project/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/users
-# projects/example-project/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/orders
+# projects/123456789012/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/users
+# projects/123456789012/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/orders
 # ...
 #
 # Each result is a SearchEntriesResult; result.dataplex_entry is the Entry.
@@ -35,7 +35,7 @@ with dataplex_v1.CatalogServiceClient() as client:
 #
 # {
 #   "dataplexEntry": {
-#     "name": "projects/example-project/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/users",
+#     "name": "projects/123456789012/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/users",
 #     "entryType": "projects/dataplex-types/locations/global/entryTypes/bigquery-table",
 #     "createTime": "2026-08-05T00:00:00Z",
 #     "updateTime": "2026-08-05T00:00:00Z",

@@ -11,8 +11,8 @@ with dataplex_v1.CatalogServiceClient() as client:
     request = dataplex_v1.SearchEntriesRequest(
         name="projects/example-project/locations/global",
         scope="projects/example-project",
-        # Keyword query: free text plus predicates. name: matches the entry
-        # name, system= filters to BigQuery entries.
+        # Keyword query: free text ("users") matches display names and
+        # descriptions; the predicate (system=bigquery) filters to BigQuery.
         query="users system=bigquery",
         semantic_search=True,
     )
@@ -22,7 +22,7 @@ with dataplex_v1.CatalogServiceClient() as client:
 
 # Expected output:
 #
-# users: projects/example-project/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/users
+# users: projects/123456789012/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/users
 #
 # CLI equivalent:
 #   gcloud dataplex entries search 'users system=bigquery' \

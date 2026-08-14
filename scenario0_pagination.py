@@ -26,7 +26,8 @@ with dataplex_v1.CatalogServiceClient() as client:
 #
 # Total BigQuery tables in project: 4
 #
-# CLI equivalent (gcloud handles page tokens itself; --page-size caps 500):
+# CLI equivalent (gcloud handles page tokens automatically; use --limit to
+# bound total results):
 #   gcloud dataplex entries search 'system=bigquery type=table' \
 #       --project=example-project --scope=projects/example-project \
 #       --semantic-search --page-size=50

@@ -86,6 +86,9 @@ def create_pii_aspect_type() -> dataplex_v1.AspectType:
 
 
 def attach_pii_aspects() -> dataplex_v1.Entry:
+    # BigQuery metadata harvesting registers new tables in the catalog within
+    # a few minutes of the copy. If this raises NotFound right after bq cp,
+    # wait a minute or two and re-run.
     with dataplex_v1.CatalogServiceClient() as client:
         aspects = {}
         for column, (pii_type, masked) in PII_COLUMNS.items():
