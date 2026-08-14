@@ -14,9 +14,8 @@ PROJECT_ID = "example-project"
 PII_ASPECT_TYPE = f"projects/{PROJECT_ID}/locations/global/aspectTypes/pii"
 
 with dataplex_v1.CatalogServiceClient() as client:
-    # Step 1: find candidate entries with a predicate-only search. The aspect
-    # filter is what makes this a catalog search rather than a BigQuery
-    # listing. Aspect existence matches column-attached aspects; use the full
+    # Step 1: find candidate entries with a predicate-only search. Aspect
+    # existence matches column-attached aspects; use the full
     # <project>.<location>.<id> path. Field-value matching
     # (aspect:...pii_type=EMAIL) is not supported on the current stack; it
     # silently degrades to free-text matching. Filter on field values
