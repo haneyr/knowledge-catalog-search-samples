@@ -101,7 +101,7 @@ Delete the resources you created:
 
 ```bash
 bq rm -r -f PROJECT_ID:thelook_ecommerce
-gcloud dataplex aspect-types delete pii --location=global --project=PROJECT_ID --quiet
+gcloud dataplex aspect-types delete pii --location=global --project=PROJECT_ID
 ```
 
 ## What's next
