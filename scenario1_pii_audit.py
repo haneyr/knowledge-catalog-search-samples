@@ -4,10 +4,6 @@ PII audit: list every BigQuery table under thelook_ecommerce that carries the
 pii aspect, show the structure of a search result, then report which columns
 hold unmasked PII. Search finds the entries; lookup_entry retrieves the
 aspect payloads, which search results leave empty.
-
-A predicate-only query is built from predicates alone (system=, parent:,
-aspect:, and so on) without any free text, so it can return results beyond
-the ~100 limit that applies to natural-language and free-text queries.
 """
 
 import json

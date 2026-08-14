@@ -68,13 +68,13 @@ One behavior surprises people parsing results: entry names come back with the pr
 
 ## Scenario 1: Retrieve and audit assets with search and lookup
 
-Which tables contain PII, in which columns, and which are unmasked? `scenario1_pii_audit.py` starts with a predicate-only search for every BigQuery table under `thelook_ecommerce` that carries the `pii` aspect — the filter a plain BigQuery listing can't do:
+Which tables contain PII, in which columns, and which are unmasked? `scenario1_pii_audit.py` starts with a predicate-only search for every BigQuery table under `thelook_ecommerce` that carries the `pii` aspect:
 
 ```
 system=bigquery parent:thelook_ecommerce aspect:PROJECT_ID.global.pii
 ```
 
-The script prints the first result in full to show the `SearchEntriesResult` structure, then calls `lookup_entry` on each result for the aspect payloads and filters client side. Against the sample data it reports four unmasked columns: `users.email`, `users.first_name`, `users.last_name`, and `users.street_address`.
+The script prints the first result in full to show the `SearchEntriesResult` structure, then calls `lookup_entry` on each result for the aspect payloads and filters client side. The sample data yields four unmasked columns: `users.email`, `users.first_name`, `users.last_name`, and `users.street_address`.
 
 Two predicate rules apply. Use the full `PROJECT_ID.LOCATION.ASPECT_TYPE_ID` path (short forms like `aspect:pii` return nothing on the current search stack). And don't rely on field-value matching (`aspect:...pii_type=EMAIL`) — it degrades to free-text matching and returns unrelated entries. Filter on field values after lookup, as the script does.
 
