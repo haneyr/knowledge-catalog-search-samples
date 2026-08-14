@@ -58,7 +58,7 @@ Indexing is not instant. Freshly copied tables take a few minutes to appear in s
 
 ## Scenario 0: Search the catalog
 
-`scenario0_search_semantic.py` is the minimal complete example: one `search_entries` call with a natural language query, scoped to your project. `scenario0_search_keyword.py` is the same call with a keyword query. Set `semantic_search=True` on every search, natural language or keyword alike; the flag selects which search stack runs the query. `False` routes queries to the legacy stack and exists for older integrations.
+`scenario0_search_semantic.py` is the minimal complete example: one `search_entries` call with a natural language query, scoped to your project. `scenario0_search_keyword.py` is the same call with a keyword query. Always set `semantic_search=True`; it enables both semantic and keyword matching. Only use `semantic_search=False` (or omit the flag) when you need keyword-only search for backward compatibility.
 
 Two variations follow. `scenario0_scope_org.py` drops the project scope and searches everything in the organization you can read — use project scope when you know where the data lives. `scenario0_pagination.py` pages through results; predicate-only queries can return results beyond the ~100 limit.
 
@@ -66,7 +66,7 @@ Each scenario 0 script ends with its CLI counterpart. The command is `gcloud dat
 
 One behavior surprises people parsing results: entry names come back with the project number, not the project ID. The lookup methods accept these names as they are, so pass them through unchanged.
 
-## Scenario 1: Enumerate and audit assets with search and lookup
+## Scenario 1: Retrieve and audit assets with search and lookup
 
 `scenario1_pii_audit.py` answers a question your security team eventually asks: which tables contain PII, in which columns, and which of those are unmasked? It starts with a predicate-only search for every BigQuery table under `thelook_ecommerce` that carries the `pii` aspect:
 

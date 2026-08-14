@@ -1,8 +1,8 @@
 """Scenario 0b: the same minimal search with a keyword query.
 
-Keep semantic_search=True for natural-language and keyword queries alike;
-it selects the current search stack. False routes the query to the legacy
-stack and exists only to keep older integrations working.
+Always set semantic_search=True; it enables both semantic and keyword
+matching. Only use semantic_search=False (or omit it) when you need
+keyword-only search for backward compatibility.
 """
 
 from google.cloud import dataplex_v1
