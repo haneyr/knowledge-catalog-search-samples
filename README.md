@@ -95,6 +95,15 @@ adk run scenario3_agent
 
 `GOOGLE_CLOUD_LOCATION` here is the Vertex AI inference region and is unrelated to the Dataplex metadata region — the agent's `lookup_context` call still targets `locations/us`, where the tutorial dataset lives. Passing resources from different regions in one `lookup_context` call fails with a location mismatch error.
 
+## Run the tests
+
+The suite fakes only the API client; requests and responses use the real proto types, so proto-handling mistakes fail in tests the same way they fail live. No GCP project is needed.
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest tests/
+```
+
 ## Clean up
 
 Delete the resources you created:
