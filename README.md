@@ -10,7 +10,7 @@ Three API methods do the work:
 
 1. `searchEntries` finds catalog entries that match a query. Natural language queries return up to about 100 results; queries built from predicates alone (such as `system=`, `parent:`, and `aspect:`) have no result cap.
 2. `lookupEntry` retrieves one entry with its aspects, entry-level and column-level; the `view` field selects which, up to 100. Search results never include aspect data — the map arrives empty, and the request has no view field — so filtering on aspect fields means chaining search with lookup and filtering client side.
-3. `lookupContext` returns prompt-ready metadata for up to 10 entries and the resources they connect to — schemas, join paths — as YAML, JSON, or XML sized by the `context_budget` option. Use it to ground an agent; use `lookupEntry` to read one entry in full.
+3. `lookupContext` returns prompt-ready metadata for up to 10 entries and the resources they connect to — schemas, join paths, glossary terms — as YAML, JSON, or XML sized by the `context_budget` option. Use it to ground an agent; use `lookupEntry` to read one entry in full.
 
 Search is global (`locations/global`); entries are regional — the lookup calls target the asset's storage region (`locations/us` here).
 
