@@ -10,7 +10,7 @@ from google.cloud import dataplex_v1
 with dataplex_v1.CatalogServiceClient() as client:
     request = dataplex_v1.SearchEntriesRequest(
         name="projects/example-project/locations/global",
-        scope="projects/example-project",
+        # scope is omitted: org-wide by default, as in the previous example.
         # Keyword query: free text ("users") matches display names and
         # descriptions; the predicate (system=bigquery) filters to BigQuery.
         query="users system=bigquery",
@@ -20,10 +20,11 @@ with dataplex_v1.CatalogServiceClient() as client:
         entry = result.dataplex_entry
         print(f"{entry.entry_source.display_name}: {entry.name}")
 
-# Expected output:
+# Expected output (an org-wide search may also match tables named "users"
+# in other projects you can read):
 #
 # users: projects/123456789012/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/users
 #
 # CLI equivalent:
 #   gcloud dataplex entries search 'users system=bigquery' \
-#       --project=example-project --scope=projects/example-project --semantic-search
+#       --project=example-project --semantic-search

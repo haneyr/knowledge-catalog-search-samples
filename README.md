@@ -58,9 +58,9 @@ Indexing is not instant. Freshly copied tables take a few minutes to appear in s
 
 ## Scenario 1: Search the catalog
 
-`scenario1_search_semantic.py` is the minimal complete example: one `search_entries` call with a natural language query, scoped to your project. `scenario1_search_keyword.py` is the same call with a keyword query. Always set `semantic_search=True`; it enables both semantic and keyword matching. Only use `semantic_search=False` (or omit the flag) when you need keyword-only search for backward compatibility.
+`scenario1_search_semantic.py` is the minimal complete example: one `search_entries` call with a natural language query. `scenario1_search_keyword.py` is the same call with a keyword query. Both omit `scope`, so they search the whole organization that contains the project — the default. Always set `semantic_search=True`; it enables both semantic and keyword matching. Only use `semantic_search=False` (or omit the flag) when you need keyword-only search for backward compatibility.
 
-Two variations follow. `scenario1_scope_org.py` drops the project scope and searches everything in the organization you can read — use project scope when you know where the data lives. `scenario1_pagination.py` pages through results; predicate-only queries can return results beyond the ~100 limit.
+Two variations follow. `scenario1_scope_project.py` sets `scope` to narrow the search to one project; project-scoped searches execute faster. `scenario1_pagination.py` pages through results; predicate-only queries can return results beyond the ~100 limit.
 
 Each scenario 1 script ends with its CLI counterpart. The command is `gcloud dataplex entries search`, the `--semantic-search` flag maps to `semantic_search=True`, and `--scope` takes the same values as the API field.
 

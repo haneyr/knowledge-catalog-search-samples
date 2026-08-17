@@ -6,9 +6,9 @@ with dataplex_v1.CatalogServiceClient() as client:
     request = dataplex_v1.SearchEntriesRequest(
         # Required. The project the request is attributed to; search itself is global.
         name="projects/example-project/locations/global",
-        # Limit the search to this project. Omit scope to search the whole
-        # organization; see the org-scope example.
-        scope="projects/example-project",
+        # scope is omitted, so the search covers the whole organization that
+        # contains the project — the default. See the project-scope example
+        # for narrowing it.
         # A natural-language query. Expect at most ~100 results from these;
         # to enumerate everything that matches, use a predicate-only query.
         query="which tables contain customer personal information",
@@ -21,10 +21,12 @@ with dataplex_v1.CatalogServiceClient() as client:
         entry = result.dataplex_entry
         print(entry.name)
 
-# Expected output (entry names depend on your project; with the tutorial
-# dataset in place, the users table ranks first). Two things to know:
-# entry names come back with the project NUMBER, not the project ID, and
-# freshly copied tables take a few minutes to appear in semantic results.
+# Expected output: the most relevant entries across your organization. In an
+# org with little other data, the tutorial's users table ranks near the top;
+# in a busy org, customer tables from other projects may outrank it. Two
+# things to know: entry names come back with the project NUMBER, not the
+# project ID, and freshly copied tables take a few minutes to appear in
+# semantic results.
 #
 # projects/123456789012/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/users
 # projects/123456789012/locations/us/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/example-project/datasets/thelook_ecommerce/tables/orders
@@ -49,4 +51,4 @@ with dataplex_v1.CatalogServiceClient() as client:
 #
 # CLI equivalent:
 #   gcloud dataplex entries search 'which tables contain customer personal information' \
-#       --project=example-project --scope=projects/example-project --semantic-search
+#       --project=example-project --semantic-search
