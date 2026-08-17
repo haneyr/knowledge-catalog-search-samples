@@ -17,9 +17,9 @@ with dataplex_v1.CatalogServiceClient() as client:
     # Step 1: find candidate entries with a predicate-only search. Aspect
     # existence matches column-attached aspects; use the full
     # <project>.<location>.<id> path. Field-value matching
-    # (aspect:...pii_type=EMAIL) is not supported on the current stack; it
-    # silently degrades to free-text matching. Filter on field values
-    # client-side instead (step 3).
+    # (aspect:...pii_type=EMAIL) is not supported on the current stack; the
+    # predicate runs as free text instead. Filter on field values
+    # client-side (step 3).
     search_request = dataplex_v1.SearchEntriesRequest(
         name=f"projects/{PROJECT_ID}/locations/global",
         scope=f"projects/{PROJECT_ID}",

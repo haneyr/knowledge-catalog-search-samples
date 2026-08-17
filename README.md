@@ -76,7 +76,7 @@ system=bigquery parent:thelook_ecommerce aspect:PROJECT_ID.global.pii
 
 The script prints the first result in full to show the `SearchEntriesResult` structure, then calls `lookup_entry` on each result for the aspect payloads and filters client side. The sample data yields four unmasked columns: `users.email`, `users.first_name`, `users.last_name`, and `users.street_address`.
 
-Two predicate rules apply. Use the full `PROJECT_ID.LOCATION.ASPECT_TYPE_ID` path (short forms like `aspect:pii` return nothing on the current search stack). And don't rely on field-value matching (`aspect:...pii_type=EMAIL`) — it degrades to free-text matching and returns unrelated entries. Filter on field values after lookup, as the script does.
+Use the full `PROJECT_ID.LOCATION.ASPECT_TYPE_ID` path in `aspect:` predicates; short forms like `aspect:pii` return nothing on the current search stack. Field-value matching (`aspect:...pii_type=EMAIL`) isn't supported either — the predicate runs as free text and matches unrelated entries. Filter on field values after lookup, as the script does.
 
 The lookups run sequentially, which is fine for a tutorial dataset. A production scan over hundreds of tables should issue them concurrently — `concurrent.futures.ThreadPoolExecutor` or `CatalogServiceAsyncClient`.
 
