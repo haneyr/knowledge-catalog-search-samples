@@ -8,11 +8,11 @@ Each script is self-contained: imports, client setup, and inline values. Run one
 
 Three API methods do the work:
 
-1. `searchEntries` finds catalog entries that match a query. Natural language queries return up to about 100 results; queries built from predicates alone (such as `system=`, `parent:`, and `aspect:`) have no result cap and can be paged through completely.
-2. `lookupEntry` retrieves a single entry with its aspects, entry-level and column-level; the `view` field on the request selects which aspects, and even the widest view returns at most 100. Search results never carry aspect data: the aspects map on a search result arrives empty, and `SearchEntriesRequest` has no view field to fill it. A search can tell you `users` carries the `pii` aspect; which columns, and whether they're masked, requires `lookupEntry`. Workflows that filter on aspect fields chain the two calls and filter client side.
+1. `searchEntries` finds catalog entries that match a query. Natural language queries return up to about 100 results; queries built from predicates alone (such as `system=`, `parent:`, and `aspect:`) have no result cap.
+2. `lookupEntry` retrieves one entry with its aspects, entry-level and column-level; the `view` field selects which, up to 100. Search results never include aspect data — the map arrives empty, and the request has no view field — so filtering on aspect fields means chaining search with lookup and filtering client side.
 3. `lookupContext` returns prompt-ready metadata for up to 10 entries and the resources they connect to — schemas, join paths — as YAML, JSON, or XML sized by the `context_budget` option. Use it to ground an agent; use `lookupEntry` to read one entry in full.
 
-One regionality rule spans all three: search is a global service, so its requests name `locations/global`, while entries live in regional data planes — the lookup calls target the asset's storage region (`locations/us` for this tutorial's dataset).
+Search is global (`locations/global`); entries are regional — the lookup calls target the asset's storage region (`locations/us` here).
 
 ## Before you begin
 
@@ -52,9 +52,9 @@ Then create the `pii` aspect type and attach it to the columns of the `users` ta
 python3 setup_pii_aspect.py
 ```
 
-The aspect type has two fields: `pii_type`, an enum classifying the kind of PII, and `masked`, a boolean recording whether the column is masked downstream. The setup script tags seven columns of `users`, four of them unmasked, so the audit in scenario 2 returns a subset instead of everything it scanned. The script is safe to re-run.
+The aspect type has two fields: `pii_type`, an enum classifying the kind of PII, and `masked`, a boolean recording whether the column is masked downstream. The setup script tags seven columns of `users`, four of them unmasked, so the audit in scenario 2 returns a subset. The script is safe to re-run.
 
-Indexing is not instant. Freshly copied tables take a few minutes to appear in semantic search results, and newly attached aspects take a few minutes to match `aspect:` predicates. If a search returns nothing right after setup, wait a few minutes and retry.
+Indexing is not instant: fresh tables and new aspects take a few minutes to become searchable. If a search returns nothing right after setup, wait and retry.
 
 ## Scenario 1: Search the catalog
 
@@ -64,7 +64,7 @@ Two variations follow. `scenario1_scope_project.py` sets `scope` to narrow the s
 
 Each scenario 1 script ends with its CLI counterpart. The command is `gcloud dataplex entries search`, the `--semantic-search` flag maps to `semantic_search=True`, and `--scope` takes the same values as the API field.
 
-One behavior surprises people parsing results: entry names come back with the project number, not the project ID. The lookup methods accept these names as they are, so pass them through unchanged.
+Entry names come back with the project number, not the project ID; the lookup methods accept them as is.
 
 ## Scenario 2: Retrieve and audit assets with search and lookup
 
@@ -93,7 +93,7 @@ export GOOGLE_CLOUD_LOCATION=us-central1
 adk run scenario3_agent
 ```
 
-`GOOGLE_CLOUD_LOCATION` here is the Vertex AI inference region and is unrelated to the Dataplex metadata region — the agent's `lookup_context` call still targets `locations/us`, where the tutorial dataset lives. Passing resources from different regions in one `lookup_context` call fails with a location mismatch error.
+`GOOGLE_CLOUD_LOCATION` sets the Vertex AI inference region, not the Dataplex metadata region — the agent's `lookup_context` call still targets `locations/us`. Mixing regions in one call fails with a location mismatch error.
 
 ## Run the tests
 
